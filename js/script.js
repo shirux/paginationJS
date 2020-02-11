@@ -44,7 +44,9 @@ const showPage = (list, page) => {
  * @param {*} list 
  */
 const appendPageLinks = (list) => {
-   //create div where the pagination buttons are located
+   let pageDiv = document.querySelector('.page');
+   
+   //document elements to interact 
    let paginationDiv = document.createElement('div');
    paginationDiv.classList.add('pagination');
 
@@ -52,31 +54,48 @@ const appendPageLinks = (list) => {
    let ul = document.createElement('ul');
    let amountOfPages = Math.ceil(list.length/maxPerPage);
    
-   appendList(ul, list);
+   //append every LI element to UL
    for(let i = 1; i <= amountOfPages; i++){
-      let li = document.createElement('li');
-      let a = document.createElement('a');
-      a.setAttribute('href', '#');
-      a.textContent = i;
-      li.appendChild(a);
-      ul.appendChild(li);
+      ul.appendChild(createLi(i));
    }
+   
+   //first item class active and filter
    let firstPage = ul.firstElementChild;
    firstPage.querySelector('a').classList.add('active');
    paginationDiv.appendChild(ul);
-
-   let pageDiv = document.querySelector('.page');
+   showPage(studentList, 1);
+   
    pageDiv.appendChild(paginationDiv);
+
 }
 
 /**
  * 
- * @param {*} ul 
- * @param {*} list 
+ * @param {*} text 
  */
-const appendList = (ul, list) => {
-
+const createLi = text => {
+   let li = document.createElement('li');
+   let a = document.createElement('a');
+   a.setAttribute('href', '#');
+   a.textContent = text;
+   li.appendChild(a);
+   return li;
 }
+
+window.addEventListener('load', (e) => {
+   let ul = document.querySelector('.pagination ul');
+   ul.addEventListener('click', (e) => {
+      if(e.target.tagName === 'A'){
+         let pageAnchor = e.target;
+         if(pageAnchor.className !== 'active'){
+            let activeAnchor = document.querySelector('.pagination .active');
+            activeAnchor.classList.remove('active');
+            pageAnchor.classList.add('active');
+            showPage(studentList, pageAnchor.textContent);
+         }
+      }
+   });
+ });
 
 
 appendPageLinks(studentList);

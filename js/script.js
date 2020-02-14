@@ -39,35 +39,52 @@ const showPage = (list, page) => {
 }
 
 /**
- * Create the `appendPageLinks function` to generate, append, and add 
-   functionality to the pagination buttons.
- * @param {*} list 
+ * Object that will represent the Pagination section
  */
-const appendPageLinks = (list) => {
-   let pageDiv = document.querySelector('.page');
-   
-   //document elements to interact 
-   let paginationDiv = document.createElement('div');
-   paginationDiv.classList.add('pagination');
+let pageLinks = {
+   create: (list) => {
+      // Create the container DIV
+      let paginationDiv = document.createElement('div');
+      paginationDiv.classList.add('pagination');
 
-   //create every button for every page inside an UL
-   let ul = document.createElement('ul');
-   let amountOfPages = Math.ceil(list.length/maxPerPage);
-   
-   //append every LI element to UL
-   for(let i = 1; i <= amountOfPages; i++){
-      ul.appendChild(createLi(i));
+      // Append the right amount of pages
+      let ul = document.createElement('ul');
+      pageLinks.appendPages(ul, list);
+      
+      // First item class active and filter
+      pageLinks.init(ul, paginationDiv);
+   },
+   appendPages: (ul, list) => {
+      let amountOfPages = Math.ceil(list.length/maxPerPage);
+      for(let i = 1; i <= amountOfPages; i++){
+         ul.appendChild(createLi(i));
+      }
+   },
+   init: (ul, div) => {
+      let firstPage = ul.firstElementChild;
+      let pageDiv = document.querySelector('.page');
+      firstPage.querySelector('a').classList.add('active');
+      div.appendChild(ul);
+      showPage(studentList, 1);
+      pageDiv.appendChild(div);
    }
-   
-   //first item class active and filter
-   let firstPage = ul.firstElementChild;
-   firstPage.querySelector('a').classList.add('active');
-   paginationDiv.appendChild(ul);
-   showPage(studentList, 1);
-   
-   pageDiv.appendChild(paginationDiv);
-
 }
+
+let searchBar = {
+   create: () => {
+      let pageHeader = document.querySelector('.page-header');
+      let searchDiv = document.createElement('div');
+      searchDiv.classList.add('student-search');
+      let input = document.createElement('input');
+      input.placeholder = 'Search for students...';
+      searchDiv.appendChild(input);
+      let searchButton = document.createElement('button');
+      searchButton.textContent = 'Search';
+      searchDiv.appendChild(searchButton);
+      pageHeader.appendChild(searchDiv);
+   }
+}
+
 
 /**
  * 
@@ -98,7 +115,8 @@ window.addEventListener('load', (e) => {
  });
 
 
-appendPageLinks(studentList);
+pageLinks.create(studentList);
+searchBar.create();
 
 
 // Remember to delete the comments that came with this file, and replace them with your own code comments.

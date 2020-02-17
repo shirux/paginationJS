@@ -13,60 +13,92 @@ FSJS project 2 - List Filter and Pagination
 ***/
 let studentList = document.querySelectorAll('ul.student-list li');
 const maxPerPage = 10;
+let filterList = [];
 
-/*** 
-   Function that will display the elements from the page you 
-   pass as a parameter. 
-   List: The list containing the elements you want to hide and display on your pagination
-   Page: The actual page
-***/
 /**
  * 
  * @param {*} list 
  * @param {*} page 
  */
-const showPage = (list, page) => {
-   const startIndex = (page * maxPerPage) - maxPerPage;
-   const endIndex = (page * maxPerPage);
 
-   for (let i = 0; i < list.length; i++) {
-      if (i >= startIndex && i < endIndex) {
-         list[i].style.display = "block";
-      } else {
-         list[i].style.display = "none";
+let page = {
+   ul: document.querySelector('.student-list'),
+   show: (list, pageNumber) => {
+      const startIndex = (pageNumber * maxPerPage) - maxPerPage;
+      const endIndex = (pageNumber * maxPerPage);
+   
+      for (let i = 0; i < list.length; i++) {
+         if (i >= startIndex && i < endIndex) {
+            list[i].style.display = "block";
+         } else {
+            list[i].style.display = "none";
+         }
       }
+   },
+   removeAll: () => {
+      page.ul.innerHTML = '';
+   },
+   appendList: (list) => {
+      list.forEach(item => {
+         page.ul.appendChild(item);
+      });
+   },
+   filter: (list, pageNumber) => {
+      page.removeAll();
+      page.appendList(list);
+      page.show(list, pageNumber);
+   },
+   showEmpty: () => {
+      page.removeAll();
+      let h1 = document.createElement('h1');
+      h1.textContent = "We're sorry!!";
+      let h2 = document.createElement('h2');
+      h2.textContent = "There are no results for your filter";
+      let h3 = document.createElement('h3');
+      h3.textContent = "Please try with another name";
+      page.ul.appendChild(h1);
+      page.ul.appendChild(h2);
+      page.ul.appendChild(h3);
    }
 }
+
 
 /**
  * Object that will represent the Pagination section
  */
 let pageLinks = {
+   ul: '',
    create: (list) => {
       // Create the container DIV
-      let paginationDiv = document.createElement('div');
-      paginationDiv.classList.add('pagination');
+      let div = createHTMLElement('div' , 'className', 'pagination');
+      let ul = createHTMLElement('ul');
+      pageLinks.ul = ul;
+      div.appendChild(ul);
 
-      // Append the right amount of pages
-      let ul = document.createElement('ul');
-      pageLinks.appendPages(ul, list);
-      
-      // First item class active and filter
-      pageLinks.init(ul, paginationDiv);
+      // append and init all buttons
+      pageLinks.appendPages(list);
+      pageLinks.init();
+      return div;
    },
-   appendPages: (ul, list) => {
+   appendPages: (list) => {
       let amountOfPages = Math.ceil(list.length/maxPerPage);
       for(let i = 1; i <= amountOfPages; i++){
-         ul.appendChild(createLi(i));
+         pageLinks.ul.appendChild(createLi(i));
       }
    },
-   init: (ul, div) => {
-      let firstPage = ul.firstElementChild;
+   init: () => {
+      let firstPage = pageLinks.ul.firstElementChild;
       let pageDiv = document.querySelector('.page');
       firstPage.querySelector('a').classList.add('active');
-      div.appendChild(ul);
-      showPage(studentList, 1);
-      pageDiv.appendChild(div);
+      page.show(studentList, 1);
+   }, 
+   removeAll: () => {
+      pageLinks.ul.innerHTML = '';
+   },
+   filter: (list) => {
+      pageLinks.removeAll();
+      pageLinks.appendPages(list);
+      pageLinks.init();
    }
 }
 
@@ -85,6 +117,14 @@ let searchBar = {
    }
 }
 
+const createHTMLElement = (tag, attribute = '', value = '') => {
+   let element = document.createElement(tag);
+   if(attribute) {
+      element[attribute] = value;
+   }
+   return element;
+}
+
 
 /**
  * 
@@ -99,7 +139,14 @@ const createLi = text => {
    return li;
 }
 
+window.addEventListener('DOMContentLoaded', (e) => {
+   let pageDiv =  document.querySelector('.page');
+   pageDiv.appendChild(pageLinks.create(studentList));
+})
+
+
 window.addEventListener('load', (e) => {
+   // Add click listener to my pagination buttons
    let ul = document.querySelector('.pagination ul');
    ul.addEventListener('click', (e) => {
       if(e.target.tagName === 'A'){
@@ -108,12 +155,42 @@ window.addEventListener('load', (e) => {
             let activeAnchor = document.querySelector('.pagination .active');
             activeAnchor.classList.remove('active');
             pageAnchor.classList.add('active');
-            showPage(studentList, pageAnchor.textContent);
+            page.show(studentList, pageAnchor.textContent);
+         }
+      }
+   });
+
+   // Add click listener to my search bar
+   let searchBar = document.querySelector('.student-search');
+   searchBar.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+         let filter = searchBar.querySelector('input').value;
+         // case where filter is empty
+         if (filter === ''){
+            pageLinks.filter(studentList);
+            page.filter(studentList, 1);
+         } else {
+            filterList = [];
+               for (let i = 0; i < studentList.length; i++) {     
+                  let student = studentList[i];
+                  let studentName = student.querySelector('h3').textContent;
+                  if (studentName.includes(filter)) {
+                     filterList.push(student);      
+                  }
+               }
+            // if result is empty
+            if(filterList.length === 0) {
+               pageLinks.removeAll();
+               page.showEmpty();
+            } else {
+               pageLinks.filter(filterList);
+               page.filter(filterList, 1);
+            }
+            
          }
       }
    });
  });
-
 
 pageLinks.create(studentList);
 searchBar.create();

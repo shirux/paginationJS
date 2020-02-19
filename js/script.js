@@ -173,7 +173,7 @@ window.addEventListener('load', (e) => {
             activeAnchor.classList.remove('active');
             pageAnchor.classList.add('active');
             if(filterList.length > 0) {
-               page.show(filterList, pageAncho.textContent)
+               page.show(filterList, pageAnchor.textContent)
             } else {
                page.show(studentList, pageAnchor.textContent);
             }
